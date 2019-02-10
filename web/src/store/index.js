@@ -8,15 +8,19 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 const state = {
-
+  newText: ''
 }
 
 const getters = {
-
+  getNewText () {
+    return state.newText || ''
+  }
 }
 
 const mutations = {
-
+  setNewText (state, payload) {
+    state.newText = payload
+  }
 }
 
 const actions = {
