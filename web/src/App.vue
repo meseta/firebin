@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app class="grey lighten-4">
     <v-toolbar flat app>
       <v-toolbar-title class="text-uppercase grey--text">
         <router-link to="/" tag="span" style="cursor: pointer" class="font-weight-light">
