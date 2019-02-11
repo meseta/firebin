@@ -1,15 +1,16 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import NewFirebin from '@/components/NewFirebin'
+import Firebin from '@/components/Firebin'
 
 Vue.use(Router)
 
 export default new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',
-      name: 'NewFirebin',
-      component: NewFirebin
+      name: 'Firebin',
+      component: Firebin
     }
   ]
 })

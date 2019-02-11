@@ -1,20 +1,18 @@
 <template>
   <v-app class="grey lighten-4">
     <v-toolbar flat app>
-      <v-toolbar-title class="text-uppercase grey--text">
-        <router-link to="/" tag="span" style="cursor: pointer" class="font-weight-light">
+      <v-toolbar-title class="text-uppercase red--text font-weight-light">
           FireBin
-        </router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn flat class="grey--text">
+        <v-btn flat class="orange--text" :disabled="!canSave">
           <v-icon left>save</v-icon>Save
         </v-btn>
-        <v-btn flat class="grey--text">
+        <v-btn flat class="red--text">
           <v-icon left>add_box</v-icon>New
         </v-btn>
-        <v-btn flat class="grey--text">
+        <v-btn flat class="orange--text" :disabled="!canCopy">
           <v-icon left>file_copy</v-icon>Copy
         </v-btn>
       </v-toolbar-items>
@@ -27,7 +25,9 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
-  name: 'App'
+  name: 'App',
+  computed: mapState(['canSave', 'canCopy'])
 }
 </script>

@@ -8,7 +8,9 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 const state = {
-  newText: ''
+  newText: '',
+  canSave: true,
+  canCopy: false
 }
 
 const getters = {

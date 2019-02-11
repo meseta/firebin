@@ -8,6 +8,9 @@
       placeholder="Start typing here"
       ref="textarea"
       v-on:click.stop
+      style="font-family: 'Roboto Mono', monospace;
+              font-size: 0.9em;
+              white-space: pre;"
     >
 
     </v-textarea>
