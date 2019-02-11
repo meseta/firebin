@@ -65,12 +65,12 @@ export default {
     },
     errorFlag (value) {
       if (!value) {
-        this.$store.commit('ui/setError', null)
+        this.$store.commit('setError', null)
       }
     },
     successFlag (value) {
       if (!value) {
-        this.$store.commit('ui/setSuccess', null)
+        this.$store.commit('setSuccess', null)
       }
     }
   }

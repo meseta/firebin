@@ -1,9 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import router from '@/router'
-// import * as firebase from 'firebase/app'
-// import 'firebase/auth'
-// import 'firebase/firestore'
+import * as firebase from 'firebase/app'
+import 'firebase/functions'
 
 Vue.use(Vuex)
 
@@ -76,11 +75,20 @@ const actions = {
     commit('setBusySave', true)
     commit('setCanEdit', false)
 
-    commit('setSuccess', 'Successfully saved firebin')
+    let saveText = firebase.functions().httpCallable('saveText')
+    saveText({text}).then(res => {
+      commit('setSuccess', 'Successfully saved firebin')
 
-    commit('setNewText', '')
-    commit('setCanEdit', true)
-    commit('setBusySave', false)
+      commit('setNewText', '')
+      commit('setCanEdit', true)
+      commit('setBusySave', false)
+    }).catch(err => {
+      console.log(err)
+      commit('setError', 'Colud not save firebin')
+
+      commit('setCanEdit', true)
+      commit('setBusySave', false)
+    })
   },
   loadText ({commit, state}, key) {
     commit('setLoadingText', true)
