@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Firebin from '@/components/Firebin'
+import ViewFirebin from '@/components/ViewFirebin'
+import NewFirebin from '@/components/NewFirebin'
+import NotFound from '@/components/NotFound'
 
 Vue.use(Router)
 
@@ -10,7 +12,17 @@ export default new Router({
     {
       path: '/',
       name: 'Firebin',
-      component: Firebin
+      component: NewFirebin
+    },
+    {
+      path: '/v/:binId',
+      name: 'View Firebin',
+      component: ViewFirebin
+    },
+    {
+      path: '*',
+      name: 'NotFound',
+      component: NotFound
     }
   ]
 })
