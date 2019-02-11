@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapActions, mapMutations } from 'vuex'
 
 export default {
   data () {
@@ -30,10 +30,14 @@ export default {
     ...mapState(['viewText', 'loadingText'])
   },
   methods: {
-    ...mapActions(['loadText'])
+    ...mapActions(['loadText']),
+    ...mapMutations(['setCanCopy'])
   },
   mounted () {
     this.loadText(this.binId)
+  },
+  beforeDestroy () {
+    this.setCanCopy(false)
   }
 }
 </script>

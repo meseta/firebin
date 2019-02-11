@@ -8,6 +8,9 @@ import router from '@/router'
 Vue.use(Vuex)
 
 const state = {
+  error: null,
+  success: null,
+
   viewText: '',
   loadingText: false,
   newText: '',
@@ -22,10 +25,25 @@ const state = {
 const getters = {
   getNewText () {
     return state.newText || ''
+  },
+  canNew () {
+    return true
+  },
+  canSave () {
+    return state.canSave && state.newText.length > 0
   }
 }
 
 const mutations = {
+  setError (state, payload) {
+    state.error = payload
+    state.success = null
+  },
+  setSuccess (state, payload) {
+    state.success = payload
+    state.error = null
+  },
+
   setViewText (state, value) { state.viewText = value },
   setLoadingText (state, value) { state.loadingText = value },
 
@@ -42,11 +60,13 @@ const mutations = {
 const actions = {
   newFirebin ({commit, state}) {
     if (router.currentRoute.path === '/') {
-      if (state.newDialog === false) {
-        commit('setNewDialog', true)
-      } else {
-        commit('setNewDialog', false)
-        commit('setNewText', '')
+      if (state.newText.length > 0) {
+        if (state.newDialog === false) {
+          commit('setNewDialog', true)
+        } else {
+          commit('setNewDialog', false)
+          commit('setNewText', '')
+        }
       }
     } else {
       router.push('/')
@@ -55,12 +75,24 @@ const actions = {
   saveText ({commit, state}, text) {
     commit('setBusySave', true)
     commit('setCanEdit', false)
-    // commit('setBusySave', false)
+
+    commit('setSuccess', 'Successfully saved firebin')
+
+    commit('setNewText', '')
+    commit('setCanEdit', true)
+    commit('setBusySave', false)
   },
   loadText ({commit, state}, key) {
     commit('setLoadingText', true)
     console.log('load' + key)
+    commit('setViewText', 'hello')
+    commit('setCanCopy', true)
     commit('setLoadingText', false)
+  },
+  copyFirebin ({commit, state}, key) {
+    commit('setNewText', state.viewText)
+    commit('setSuccess', 'You can now edit the copy')
+    router.push('/')
   }
 }
 
