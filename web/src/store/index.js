@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import router from '@/router'
 import * as firebase from 'firebase/app'
 import 'firebase/functions'
+import 'firebase/firestore'
 
 Vue.use(Vuex)
 
@@ -93,19 +94,18 @@ const actions = {
   },
   loadFirebin ({commit, state}, binId) {
     commit('setLoadingText', true)
-    let saveFirebinFunc = firebase.functions().httpsCallable('loadFirebin')
-    saveFirebinFunc({
-      binId: binId
-    }).then(res => {
-      commit('setViewText', res.data.data)
-      commit('setCanCopy', true)
-      commit('setLoadingText', false)
-    }).catch(err => {
-      console.log(err)
-      commit('setError', 'Could not load firebin')
-      commit('setLoadingText', false)
-      router.push('/NotFound')
-    })
+
+    return firebase.firestore().collection('firebin').doc(binId).get()
+      .then(doc => {
+        commit('setViewText', doc.get('data'))
+        commit('setCanCopy', true)
+        commit('setLoadingText', false)
+      }).catch(err => {
+        console.log(err)
+        commit('setError', 'Could not load firebin')
+        commit('setLoadingText', false)
+        router.push('/NotFound')
+      })
   },
   copyFirebin ({commit, state}, key) {
     commit('setNewText', state.viewText)

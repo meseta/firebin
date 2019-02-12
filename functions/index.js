@@ -27,7 +27,7 @@ exports.saveFirebin = functions
     })
   });
 
-exports.loadFirebin = functions
+/* exports.loadFirebin = functions
   .runWith(runtimeOpts)
   .https.onCall((data, context) => {
 
@@ -38,4 +38,4 @@ exports.loadFirebin = functions
       }
       return { data: doc.get('data') }
     })
-  });
+  }); */
