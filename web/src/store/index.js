@@ -75,8 +75,9 @@ const actions = {
     commit('setBusySave', true)
     commit('setCanEdit', false)
 
-    let saveText = firebase.functions().httpCallable('saveText')
-    saveText({text}).then(res => {
+    let saveText = firebase.functions().httpsCallable('saveText')
+    console.log(text)
+    saveText({text: text}).then(res => {
       commit('setSuccess', 'Successfully saved firebin')
 
       commit('setNewText', '')

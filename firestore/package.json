@@ -1,0 +1,8 @@
+{
+  "name": "firestore",
+  "description": "Firestore for Firebase",
+  "scripts": {
+    "deploy": "firebase deploy --only firestore:rules"
+  },
+  "private": true
+}

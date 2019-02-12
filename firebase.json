@@ -9,7 +9,7 @@
     ]
   },
   "hosting": {
-    "target": "gmfirebin",
+    "target": "firebin",
     "public": "./web/dist",
     "ignore": [
       "firebase.json",

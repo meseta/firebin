@@ -1,4 +1,4 @@
-# firehaste
+# Firebin
 
 > Open-source pastebin using Firebase as a backend
 
