@@ -71,32 +71,41 @@ const actions = {
       router.push('/')
     }
   },
-  saveText ({commit, state}, text) {
+  saveFirebin ({commit, state}) {
     commit('setBusySave', true)
     commit('setCanEdit', false)
-
-    let saveText = firebase.functions().httpsCallable('saveText')
-    console.log(text)
-    saveText({text: text}).then(res => {
+    let saveFirebinFunc = firebase.functions().httpsCallable('saveFirebin')
+    saveFirebinFunc({
+      data: state.newText,
+      encoding: ''
+    }).then(res => {
       commit('setSuccess', 'Successfully saved firebin')
-
       commit('setNewText', '')
       commit('setCanEdit', true)
       commit('setBusySave', false)
+      router.push('/v/' + res.data.binId)
     }).catch(err => {
       console.log(err)
-      commit('setError', 'Colud not save firebin')
-
+      commit('setError', 'Could not save firebin')
       commit('setCanEdit', true)
       commit('setBusySave', false)
     })
   },
-  loadText ({commit, state}, key) {
+  loadFirebin ({commit, state}, binId) {
     commit('setLoadingText', true)
-    console.log('load' + key)
-    commit('setViewText', 'hello')
-    commit('setCanCopy', true)
-    commit('setLoadingText', false)
+    let saveFirebinFunc = firebase.functions().httpsCallable('loadFirebin')
+    saveFirebinFunc({
+      binId: binId
+    }).then(res => {
+      commit('setViewText', res.data.data)
+      commit('setCanCopy', true)
+      commit('setLoadingText', false)
+    }).catch(err => {
+      console.log(err)
+      commit('setError', 'Could not load firebin')
+      commit('setLoadingText', false)
+      router.push('/NotFound')
+    })
   },
   copyFirebin ({commit, state}, key) {
     commit('setNewText', state.viewText)

@@ -30,11 +30,11 @@ export default {
     ...mapState(['viewText', 'loadingText'])
   },
   methods: {
-    ...mapActions(['loadText']),
+    ...mapActions(['loadFirebin']),
     ...mapMutations(['setCanCopy'])
   },
   mounted () {
-    this.loadText(this.binId)
+    this.loadFirebin(this.binId)
   },
   beforeDestroy () {
     this.setCanCopy(false)

@@ -9,7 +9,7 @@
         <v-btn v-on:click="newFirebin()" :disabled="!canNew" flat class="secondary--text">
           <v-icon left>add_box</v-icon>New
         </v-btn>
-        <v-btn v-on:click="saveText()" flat class="primary--text" :disabled="!canSave" :loading="busySave">
+        <v-btn v-on:click="saveFirebin()" flat class="primary--text" :disabled="!canSave" :loading="busySave">
           <v-icon left>save</v-icon>Save
         </v-btn>
         <v-btn v-on:click="copyFirebin()" flat class="secondary--text" :disabled="!canCopy" :loading="busyCopy">
@@ -48,7 +48,7 @@ export default {
     ...mapGetters(['canNew', 'canSave'])
   },
   methods: {
-    ...mapActions(['newFirebin', 'saveText', 'copyFirebin'])
+    ...mapActions(['newFirebin', 'saveFirebin', 'copyFirebin'])
   },
   watch: {
     error (value) {
