@@ -4,6 +4,7 @@ import router from '@/router'
 import * as firebase from 'firebase/app'
 import 'firebase/functions'
 import 'firebase/firestore'
+import pako from 'pako'
 
 Vue.use(Vuex)
 
@@ -75,10 +76,36 @@ const actions = {
   saveFirebin ({commit, state}) {
     commit('setBusySave', true)
     commit('setCanEdit', false)
+
+    let data = state.newText
+    let encode = 'text'
+    let compress = 'none'
+    let input = new TextEncoder('utf-8').encode(data)
+    let b64str
+
+    try {
+      let compress = pako.deflate(input)
+      let blob = firebase.firestore.Blob.fromUint8Array(compress)
+      b64str = blob.toBase64()
+    } catch (err) {
+      console.log(err)
+      commit('setError', 'Could not compress data for sending')
+      commit('setCanEdit', true)
+      commit('setBusySave', false)
+      return
+    }
+
+    if (b64str.length < state.newText.length) {
+      data = b64str
+      encode = 'base64'
+      compress = 'pako'
+    }
+
     let saveFirebinFunc = firebase.functions().httpsCallable('saveFirebin')
     saveFirebinFunc({
-      data: state.newText,
-      encoding: ''
+      data: data,
+      encode: encode,
+      compress: compress
     }).then(res => {
       commit('setSuccess', 'Successfully saved firebin')
       commit('setNewText', '')
@@ -97,14 +124,37 @@ const actions = {
 
     return firebase.firestore().collection('firebin').doc(binId).get()
       .then(doc => {
-        commit('setViewText', doc.get('data'))
+        if (!doc.exists) {
+          throw new Error()
+        }
+
+        let data = doc.get('data')
+        let decode
+        switch (doc.get('encode')) {
+          case 'base64':
+            decode = firebase.firestore.Blob.fromBase64String(data).toUint8Array()
+            break
+          default:
+            decode = data
+        }
+
+        let result
+        switch (doc.get('compress')) {
+          case 'pako':
+            result = new TextDecoder('utf-8').decode(pako.inflate(decode))
+            break
+          default:
+            result = decode
+        }
+
+        commit('setViewText', result)
         commit('setCanCopy', true)
         commit('setLoadingText', false)
       }).catch(err => {
         console.log(err)
         commit('setError', 'Could not load firebin')
         commit('setLoadingText', false)
-        router.push('/NotFound')
+        commit('setViewText', '')
       })
   },
   copyFirebin ({commit, state}, key) {

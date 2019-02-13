@@ -1,5 +1,5 @@
 const functions = require('firebase-functions');
-
+const pako = require('pako');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
@@ -8,34 +8,64 @@ const runtimeOpts = {
   timeoutSeconds: 20
 }
 
+class StatusException extends Error {
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+  }
+}
+
+function returnErr(res, err) {
+  console.error(err)
+  if (err instanceof StatusException) {
+    res.status(err.code).send(err.message)
+  }
+  else {
+    res.status(500).send()
+  }
+  return
+}
+
+function returnOk(res, msg) {
+  res.status(200).send(msg)
+  return
+}
+
 exports.saveFirebin = functions
   .runWith(runtimeOpts)
-  .https.onCall((data, context) => {
+  .https.onCall((body, context) => {
 
     let ip = context.rawRequest.headers['x-forwarded-for']
-    console.log(ip)
-    console.log(data)
 
     return admin.firestore().collection('firebin').add({
       ip: ip,
       created: admin.firestore.FieldValue.serverTimestamp(),
-      data: data.data,
-      compressed: false
+      data: body.data,
+      encode: body.encode,
+      compress: body.compress
     })
     .then(doc => {
       return {binId: doc.id}
     })
   });
-
-/* exports.loadFirebin = functions
+/*
+exports.loadFirebin = functions
   .runWith(runtimeOpts)
-  .https.onCall((data, context) => {
+  .https.onRequest((req, res) => {
 
-    return admin.firestore().collection('firebin').doc(data.binId).get()
+    return admin.firestore().collection('firebin').doc(req.binId).get()
     .then(doc => {
       if (!doc.exists) {
-        throw new functions.https.HttpsError('not-found');
+        throw new StatusException(404, "firebin not found")
       }
-      return { data: doc.get('data') }
+
+      return returnOk(res, {
+        data: doc.get('data'),
+        compress: doc.get('compress')
+        encode: doc.get('encode')
+      })
+    })
+    .catch(err => {
+      return returnErr(res, err)
     })
   }); */
