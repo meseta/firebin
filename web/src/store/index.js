@@ -20,7 +20,9 @@ const state = {
   canSave: true,
   busySave: false,
   canCopy: false,
-  busyCopy: false
+  busyCopy: false,
+
+  darkMode: true
 }
 
 const getters = {
@@ -55,10 +57,16 @@ const mutations = {
   setCanSave (state, value) { state.canSave = value },
   setBusySave (state, value) { state.busySave = value },
   setCanCopy (state, value) { state.canCopy = value },
-  setBusyCopy (state, value) { state.busyCopy = value }
+  setBusyCopy (state, value) { state.busyCopy = value },
+
+  setDarkMode (state, value) { state.darkMode = value }
 }
 
 const actions = {
+  toggleDark ({commit, state}) {
+    localStorage.darkMode = !state.darkMode
+    commit('setDarkMode', !state.darkMode)
+  },
   newFirebin ({commit, state}) {
     if (router.currentRoute.path === '/') {
       if (state.newText.length > 0) {
@@ -111,7 +119,7 @@ const actions = {
       commit('setNewText', '')
       commit('setCanEdit', true)
       commit('setBusySave', false)
-      router.push('/v/' + res.data.binId)
+      router.push('/' + res.data.binId)
     }).catch(err => {
       console.log(err)
       commit('setError', 'Could not save firebin')

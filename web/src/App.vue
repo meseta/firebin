@@ -1,9 +1,13 @@
 <template>
-  <v-app class="grey lighten-4">
-    <v-toolbar flat app>
+  <v-app :class="darkMode ? 'brown darken-4': 'grey lighten-4'" :dark="darkMode">
+    <v-toolbar flat app :class="darkMode ? 'deep-orange darken-4': 'grey lighten-4'">
       <v-toolbar-title class="text-uppercase primary--text font-weight-light">
         FireBin
       </v-toolbar-title>
+      <v-btn fab small flat v-on:click="toggleDark()">
+        <v-icon v-if="darkMode" class="secondary--text">brightness_3</v-icon>
+        <v-icon v-else class="secondary--text">brightness_5</v-icon>
+      </v-btn>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn v-on:click="newFirebin()" :disabled="!canNew" flat class="secondary--text">
@@ -22,7 +26,7 @@
       {{ error }}
       <v-btn flat @click="errorFlag=false">Aww</v-btn>
     </v-snackbar>
-    <v-snackbar top color="success" v-model="successFlag">
+    <v-snackbar top color="success" :timeout="0" v-model="successFlag">
       {{ success }}
       <v-btn flat @click="successFlag=false">OK</v-btn>
     </v-snackbar>
@@ -34,7 +38,7 @@
 </template>
 
 <script>
-import { mapState, mapActions, mapGetters } from 'vuex'
+import { mapState, mapActions, mapGetters, mapMutations } from 'vuex'
 export default {
   name: 'App',
   data () {
@@ -44,11 +48,12 @@ export default {
     }
   },
   computed: {
-    ...mapState(['canCopy', 'busySave', 'busyCopy', 'error', 'success']),
+    ...mapState(['canCopy', 'busySave', 'busyCopy', 'error', 'success', 'darkMode']),
     ...mapGetters(['canNew', 'canSave'])
   },
   methods: {
-    ...mapActions(['newFirebin', 'saveFirebin', 'copyFirebin'])
+    ...mapActions(['newFirebin', 'saveFirebin', 'copyFirebin', 'toggleDark']),
+    ...mapMutations(['setDarkMode'])
   },
   watch: {
     error (value) {
@@ -72,6 +77,11 @@ export default {
       if (!value) {
         this.$store.commit('setSuccess', null)
       }
+    }
+  },
+  mounted () {
+    if (localStorage.darkMode) {
+      this.$store.commit('setDarkMode', JSON.parse(localStorage.darkMode))
     }
   }
 }
