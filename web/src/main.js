@@ -19,7 +19,7 @@ Vue.use(Vuetify, {
   theme: {
     primary: colors.red,
     secondary: colors.orange,
-    success: colors.lime,
+    success: colors.lightGreen,
     error: colors.deepOrange
   }
 })

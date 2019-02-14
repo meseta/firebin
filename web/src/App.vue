@@ -26,7 +26,7 @@
       {{ error }}
       <v-btn flat @click="errorFlag=false">Aww</v-btn>
     </v-snackbar>
-    <v-snackbar top color="success" :timeout="0" v-model="successFlag">
+    <v-snackbar top color="success" v-model="successFlag">
       {{ success }}
       <v-btn flat @click="successFlag=false">OK</v-btn>
     </v-snackbar>
@@ -43,7 +43,7 @@ export default {
   name: 'App',
   data () {
     return {
-      errorFlag: false,
+      errorFlag: true,
       successFlag: false
     }
   },
