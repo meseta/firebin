@@ -98,7 +98,7 @@ const actions = {
     if (b64str.length < state.newText.length) {
       data = b64str
       encode = 'base64'
-      compress = 'pako'
+      compress = 'zlib'
     }
 
     let saveFirebinFunc = firebase.functions().httpsCallable('saveFirebin')
@@ -140,7 +140,7 @@ const actions = {
 
         let result
         switch (doc.get('compress')) {
-          case 'pako':
+          case 'zlib':
             result = new TextDecoder('utf-8').decode(pako.inflate(decode))
             break
           default:
