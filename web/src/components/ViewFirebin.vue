@@ -4,7 +4,7 @@
   </v-layout>
   <v-layout row wrap v-else-if="viewText===''">
     <v-flex class="text-xs-center" my-5>
-      <h1 class="headline font-weight-light" my-5>No Data</h1>
+      <h1 class="headline font-weight-light" my-5>Page Not Found</h1>
     </v-flex>
   </v-layout>
   <v-layout fill-height v-else>

@@ -15,7 +15,7 @@ export default new Router({
       component: NewFirebin
     },
     {
-      path: '/v/:binId',
+      path: '/:binId',
       name: 'View Firebin',
       component: ViewFirebin
     },
