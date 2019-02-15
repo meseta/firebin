@@ -1,5 +1,5 @@
 <template>
-  <v-layout fill-height v-on:click="focus()" style="cursor: text;">
+  <v-layout fill-height v-on:click="focus()" style="cursor: text;" my-0 mx-1 pa-0>
     <v-dialog v-model="newDialog" max-width="290">
       <v-card>
         <v-card-title class="headline">Erase previous work?</v-card-title>

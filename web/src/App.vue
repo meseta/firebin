@@ -43,7 +43,7 @@ export default {
   name: 'App',
   data () {
     return {
-      errorFlag: true,
+      errorFlag: false,
       successFlag: false
     }
   },
