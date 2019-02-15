@@ -47,7 +47,6 @@ export default {
   watch: {
     loadingText (value) {
       if (value === false && this.formattedText === '') {
-        console.log('start highlight')
         this.highlighted = true
         let decode = hljs.highlightAuto(this.viewText)
         this.formattedText = hljs.fixMarkup(decode.value)
