@@ -58,7 +58,8 @@ exports.editFirebin = functions
       return admin.firestore().collection('firebin').doc(binId).set({
         data: body.data,
         encode: body.encode,
-        compress: body.compress
+        compress: body.compress,
+        language: body.language
       }, {merge: true})
     })
     .then(() => {
@@ -80,7 +81,8 @@ exports.saveFirebin = functions
       created: admin.firestore.FieldValue.serverTimestamp(),
       data: body.data,
       encode: body.encode,
-      compress: body.compress
+      compress: body.compress,
+      language: body.language
     })
     .then(doc => {
       binId = doc.id
@@ -130,7 +132,8 @@ exports.saveFirebinExt = functions
       created: admin.firestore.FieldValue.serverTimestamp(),
       data: data,
       encode: encode,
-      compress: compress
+      compress: compress,
+      language: null
     })
     .then(doc => {
       binId = doc.id
