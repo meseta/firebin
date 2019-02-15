@@ -39,7 +39,13 @@ export default {
     ...mapMutations(['setCanCopy'])
   },
   mounted () {
-    this.loadFirebin(this.binId)
+    let bits = this.binId.split('.')
+
+    if (bits.length > 1) {
+      this.language = bits[1]
+    }
+
+    this.loadFirebin(bits[0])
   },
   beforeDestroy () {
     this.setCanCopy(false)
@@ -48,9 +54,16 @@ export default {
     loadingText (value) {
       if (value === false && this.formattedText === '') {
         this.highlighted = true
-        let decode = hljs.highlightAuto(this.viewText)
+
+        let decode
+        if (this.language === '') {
+          decode = hljs.highlightAuto(this.viewText)
+        } else {
+          decode = hljs.highlightAuto(this.viewText, [this.language])
+        }
         this.formattedText = hljs.fixMarkup(decode.value)
         this.language = decode.language
+        console.log(decode)
 
         // hack to change the color of strings
         this.formattedText = this.formattedText.replace(/<span class="hljs-string">/g, '<span class="hljs-string-replacement">')
