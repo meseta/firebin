@@ -1,5 +1,15 @@
 <template>
-  <v-layout fill-height v-on:click="focus()" style="cursor: text;" my-0 mx-1 pa-0>
+  <v-layout fill-width v-if="inPreview">
+    <v-container
+      mx-3 my-2 pa-0
+      v-html="formattedText"
+      style="font-family: 'Roboto Mono', monospace;
+              font-size: 0.9em;
+              white-space: pre-wrap;">
+    </v-container>
+  </v-layout>
+
+  <v-layout v-else fill-height v-on:click="focus()" style="cursor: text;" my-0 mx-1 pa-0>
     <v-dialog v-model="newDialog" max-width="290">
       <v-card>
         <v-card-title class="headline">Erase previous work?</v-card-title>
@@ -37,7 +47,7 @@ import { mapState, mapActions } from 'vuex'
 
 export default {
   computed: {
-    ...mapState(['canEdit']),
+    ...mapState(['canEdit', 'inPreview', 'formattedText']),
     newText: {
       get: function () { return this.$store.state.newText },
       set: function (text) { this.$store.commit('setNewText', text) }
@@ -48,11 +58,16 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['newFirebin']),
+    ...mapActions(['newFirebin', 'loadDraft']),
     focus: function () {
       let element = this.$refs.textarea
       element.focus()
       element.setCaretPosition(-1)
+    }
+  },
+  mounted () {
+    if (this.newText === '') {
+      this.loadDraft()
     }
   }
 }

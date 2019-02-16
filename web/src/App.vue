@@ -4,10 +4,36 @@
       <v-toolbar-title class="text-uppercase primary--text font-weight-light">
         FireBin
       </v-toolbar-title>
-      <v-btn fab small flat v-on:click="toggleDark()">
-        <v-icon v-if="darkMode" class="secondary--text">brightness_3</v-icon>
-        <v-icon v-else class="secondary--text">brightness_5</v-icon>
-      </v-btn>
+      <v-tooltip bottom>
+        <template #activator="data">
+          <v-btn fab small flat v-on="data.on" v-on:click="toggleDark()" >
+            <v-icon v-if="darkMode" class="secondary--text">brightness_3</v-icon>
+            <v-icon v-else class="secondary--text">brightness_5</v-icon>
+          </v-btn>
+        </template>
+        <span>Toggle dark mode</span>
+      </v-tooltip>
+
+      <v-tooltip bottom>
+        <template #activator="data">
+          <v-btn fab small flat :disabled="!canSave" v-on="data.on" v-on:click="saveDraft(true)" >
+            <v-icon class="secondary--text">save_alt</v-icon>
+          </v-btn>
+        </template>
+        <span>Save draft</span>
+      </v-tooltip>
+
+      <v-tooltip bottom>
+        <template #activator="data">
+          <v-btn fab small :flat="!inPreview" :disabled="!canSave" v-on="data.on" v-on:click="toggleInPreview()" >
+            <v-icon class="secondary--text" v-if="inPreview">close</v-icon>
+            <v-icon class="secondary--text" v-else>image_search</v-icon>
+          </v-btn>
+        </template>
+        <span v-if="inPreview">Close preview</span>
+        <span v-else>Preview</span>
+      </v-tooltip>
+
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn v-on:click="newFirebin()" :disabled="!canNew" flat class="secondary--text">
@@ -48,11 +74,17 @@ export default {
     }
   },
   computed: {
-    ...mapState(['canCopy', 'busySave', 'busyCopy', 'error', 'success', 'darkMode']),
+    ...mapState([
+      'canCopy', 'busySave', 'busyCopy', 'error', 'success',
+      'inPreview', 'darkMode'
+    ]),
     ...mapGetters(['canNew', 'canSave'])
   },
   methods: {
-    ...mapActions(['newFirebin', 'saveFirebin', 'copyFirebin', 'toggleDark']),
+    ...mapActions([
+      'newFirebin', 'saveFirebin', 'copyFirebin', 'toggleDark',
+      'toggleInPreview', 'saveDraft'
+    ]),
     ...mapMutations(['setDarkMode'])
   },
   watch: {

@@ -17,9 +17,12 @@ const state = {
   viewText: '',
   formattedText: '',
   loadingText: false,
+
   newText: '',
   canEdit: true,
   newDialog: false,
+  inPreview: false,
+
   canSave: true,
   busySave: false,
   canCopy: false,
@@ -36,7 +39,7 @@ const getters = {
     return true
   },
   canSave () {
-    return state.canSave && state.newText.length > 0
+    return state.canSave && !state.busySave && state.newText.length > 0
   }
 }
 
@@ -57,6 +60,7 @@ const mutations = {
   setNewText (state, value) { state.newText = value },
   setCanEdit (state, value) { state.canEdit = value },
   setNewDialog (state, value) { state.newDialog = value },
+  setInPreview (state, value) { state.inPreview = value },
 
   setCanSave (state, value) { state.canSave = value },
   setBusySave (state, value) { state.busySave = value },
@@ -70,6 +74,14 @@ const actions = {
   toggleDark ({commit, state}) {
     localStorage.darkMode = !state.darkMode
     commit('setDarkMode', !state.darkMode)
+  },
+  toggleInPreview ({commit, state, dispatch}) {
+    if (state.inPreview) {
+      commit('setInPreview', false)
+    } else {
+      dispatch('renderText', {text: state.newText})
+      commit('setInPreview', true)
+    }
   },
   newFirebin ({commit, state}) {
     if (router.currentRoute.path === '/') {
@@ -85,9 +97,11 @@ const actions = {
       router.push('/')
     }
   },
-  saveFirebin ({commit, state}) {
+  saveFirebin ({commit, state, dispatch}) {
     commit('setBusySave', true)
     commit('setCanEdit', false)
+
+    dispatch('saveDraft', false) // save just in case
 
     let data = state.newText
     let encode = 'text'
@@ -129,6 +143,7 @@ const actions = {
     }).then(res => {
       commit('setSuccess', 'Successfully saved firebin')
       commit('setNewText', '')
+      dispatch('saveDraft', false) // saving here will save empty string thus clearing draft
       commit('setCanEdit', true)
       commit('setBusySave', false)
 
@@ -144,7 +159,7 @@ const actions = {
       commit('setBusySave', false)
     })
   },
-  loadFirebin ({commit, state}, payload) {
+  loadFirebin ({commit, state, dispatch}, payload) {
     commit('setLoadingText', true)
 
     let binId = payload.binId
@@ -175,19 +190,7 @@ const actions = {
             result = decode
         }
 
-        let hlText
-        if (language) {
-          hlText = hljs.highlightAuto(result, [language])
-        } else {
-          hlText = hljs.highlightAuto(result)
-        }
-        let formattedText = hljs.fixMarkup(hlText.value)
-        language = hlText.language
-
-        // hack to change the color of strings
-        formattedText = formattedText.replace(/<span class="hljs-string">/g, '<span class="hljs-string-replacement">')
-
-        commit('setFormattedText', formattedText)
+        dispatch('renderText', {text: result, language: language})
         commit('setViewText', result)
         commit('setCanCopy', true)
         commit('setLoadingText', false)
@@ -202,6 +205,36 @@ const actions = {
     commit('setNewText', state.viewText)
     commit('setSuccess', 'You can now edit the copy')
     router.push('/')
+  },
+  saveDraft ({commit, state}, notify) {
+    localStorage.draft = state.newText
+    if (notify) {
+      commit('setSuccess', 'Draft saved')
+    }
+  },
+  loadDraft ({commit}) {
+    commit('setNewText', localStorage.draft)
+  },
+  clearDraft ({commit, state}) {
+    localStorage.draft = ''
+  },
+  renderText ({commit}, payload) {
+    let text = payload.text
+    let language = payload.language
+
+    let hlText
+    if (language) {
+      hlText = hljs.highlightAuto(text, [language])
+    } else {
+      hlText = hljs.highlightAuto(text)
+    }
+    let formatted = hljs.fixMarkup(hlText.value)
+    language = hlText.language
+
+    // hack to change the color of strings
+    formatted = formatted.replace(/<span class="hljs-string">/g, '<span class="hljs-string-replacement">')
+
+    commit('setFormattedText', formatted)
   }
 }
 
