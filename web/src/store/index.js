@@ -57,7 +57,7 @@ const getters = {
     return true
   },
   canSave () {
-    return state.canSave && !state.busySave && state.newText.length > 0
+    return state.canSave && !state.busySave && state.newText
   },
   listHljsLanguages () {
     return state.languageList
@@ -109,7 +109,7 @@ const actions = {
   rerenderPreview ({state, dispatch}, language) {
     dispatch('renderText', {text: state.viewText, language: language})
   },
-  newFirebin ({commit, state}) {
+  newFirebin ({commit, state, dispatch}) {
     if (router.currentRoute.path === '/') {
       if (state.newText.length > 0) {
         if (state.newDialog === false) {
@@ -118,6 +118,7 @@ const actions = {
           commit('setNewDialog', false)
           commit('setInPreview', false)
           commit('setNewText', '')
+          dispatch('saveDraft', false) // clear draft
         }
       }
     } else {
@@ -239,7 +240,9 @@ const actions = {
     }
   },
   loadDraft ({commit}) {
-    commit('setNewText', localStorage.draft)
+    if (localStorage.draft) {
+      commit('setNewText', localStorage.draft)
+    }
   },
   clearDraft ({commit, state}) {
     localStorage.draft = ''
