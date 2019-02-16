@@ -118,3 +118,19 @@ export default {
   }
 }
 </script>
+
+<style>
+@import 'highlight.js/styles/gml.css';
+
+.hljs-string-replacement { /* replacement color to make it darker  */
+  color: #aaaa00;
+}
+
+pre code {
+  padding: 10px;
+}
+
+pre code:after {
+  content: none;
+}
+</style>

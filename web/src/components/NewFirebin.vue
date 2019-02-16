@@ -1,15 +1,34 @@
 <template>
-  <v-layout fill-width v-if="inPreview">
-    <v-container
-      mx-3 my-2 pa-0
-      v-html="formattedText"
-      style="font-family: 'Roboto Mono', monospace;
-              font-size: 0.9em;
-              white-space: pre-wrap;">
-    </v-container>
-  </v-layout>
+  <v-container fluid fill-height pa-0>
+    <v-layout v-if="inPreview" column>
+      <v-select
+        solo
+        v-model="language"
+        :items="listHljsLanguages"></v-select>
+      <v-container
+        mx-3 my-2 pa-0
+        v-html="formattedText"
+        :style="'font-family: \'Roboto Mono\', monospace; font-size: 0.9em;' +
+                (previewUsePre ? 'white-space: pre-wrap; word-wrap: break-word;' : '')">
+      </v-container>
+    </v-layout>
 
-  <v-layout v-else fill-height v-on:click="focus()" style="cursor: text;" my-0 mx-1 pa-0>
+    <v-layout v-else fill-height v-on:click="focus()" style="cursor: text;" my-0 mx-1 pa-0>
+      <v-textarea
+        v-model="newText"
+        full-width
+        auto-grow
+        autofocus
+        :readonly="!canEdit"
+        placeholder="Start typing here"
+        ref="textarea"
+        v-on:click.stop
+        style="font-family: 'Roboto Mono', monospace; font-size: 0.9em;">
+      >
+
+      </v-textarea>
+    </v-layout>
+
     <v-dialog v-model="newDialog" max-width="290">
       <v-card>
         <v-card-title class="headline">Erase previous work?</v-card-title>
@@ -23,31 +42,16 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <v-textarea
-      v-model="newText"
-      full-width
-      auto-grow
-      autofocus
-      :readonly="!canEdit"
-      placeholder="Start typing here"
-      ref="textarea"
-      v-on:click.stop
-      style="font-family: 'Roboto Mono', monospace;
-              font-size: 0.9em;
-              white-space: pre;"
-    >
-
-    </v-textarea>
-  </v-layout>
+  </v-container>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapActions, mapGetters } from 'vuex'
 
 export default {
   computed: {
-    ...mapState(['canEdit', 'inPreview', 'formattedText']),
+    ...mapState(['canEdit', 'inPreview', 'formattedText', 'previewUsePre']),
+    ...mapGetters(['listHljsLanguages']),
     newText: {
       get: function () { return this.$store.state.newText },
       set: function (text) { this.$store.commit('setNewText', text) }
@@ -55,10 +59,17 @@ export default {
     newDialog: {
       get: function () { return this.$store.state.newDialog },
       set: function (value) { this.$store.commit('setNewDialog', value) }
+    },
+    language: {
+      get: function () { return this.$store.state.formattedLanguage },
+      set: function (value) {
+        this.$store.commit('setFormattedLanguage', value)
+        this.rerenderPreview(value)
+      }
     }
   },
   methods: {
-    ...mapActions(['newFirebin', 'loadDraft']),
+    ...mapActions(['newFirebin', 'loadDraft', 'rerenderPreview']),
     focus: function () {
       let element = this.$refs.textarea
       element.focus()

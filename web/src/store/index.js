@@ -7,6 +7,20 @@ import 'firebase/firestore'
 import pako from 'pako'
 
 import hljs from 'highlight.js'
+import MarkdownIt from 'markdown-it'
+
+const md = new MarkdownIt({
+  breaks: false,
+  typographer: true,
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(lang, str).value
+      } catch (__) {}
+    }
+    return ''
+  }
+})
 
 Vue.use(Vuex)
 
@@ -17,18 +31,22 @@ const state = {
   viewText: '',
   formattedText: '',
   loadingText: false,
+  formattedLanguage: '',
 
   newText: '',
   canEdit: true,
   newDialog: false,
   inPreview: false,
+  previewUsePre: true,
 
   canSave: true,
   busySave: false,
   canCopy: false,
   busyCopy: false,
 
-  darkMode: true
+  darkMode: true,
+
+  languageList: hljs.listLanguages().sort()
 }
 
 const getters = {
@@ -42,7 +60,7 @@ const getters = {
     return state.canSave && !state.busySave && state.newText.length > 0
   },
   listHljsLanguages () {
-    return hljs.listLanguages()
+    return state.languageList
   }
 }
 
@@ -58,12 +76,14 @@ const mutations = {
 
   setViewText (state, value) { state.viewText = value },
   setFormattedText (state, value) { state.formattedText = value },
+  setFormattedLanguage (state, value) { state.formattedLanguage = value },
   setLoadingText (state, value) { state.loadingText = value },
 
   setNewText (state, value) { state.newText = value },
   setCanEdit (state, value) { state.canEdit = value },
   setNewDialog (state, value) { state.newDialog = value },
   setInPreview (state, value) { state.inPreview = value },
+  setPreviewUsePre (state, value) { state.previewUsePre = value },
 
   setCanSave (state, value) { state.canSave = value },
   setBusySave (state, value) { state.busySave = value },
@@ -87,7 +107,7 @@ const actions = {
     }
   },
   rerenderPreview ({state, dispatch}, language) {
-    dispatch('renderText', {text: state.newText, language: language})
+    dispatch('renderText', {text: state.viewText, language: language})
   },
   newFirebin ({commit, state}) {
     if (router.currentRoute.path === '/') {
@@ -96,6 +116,7 @@ const actions = {
           commit('setNewDialog', true)
         } else {
           commit('setNewDialog', false)
+          commit('setInPreview', false)
           commit('setNewText', '')
         }
       }
@@ -197,7 +218,6 @@ const actions = {
         }
 
         dispatch('renderText', {text: result, language: language})
-        commit('setViewText', result)
         commit('setCanCopy', true)
         commit('setLoadingText', false)
       }).catch(err => {
@@ -228,19 +248,32 @@ const actions = {
     let text = payload.text
     let language = payload.language
 
+    commit('setViewText', text)
     let hlText
+    let formatted
     if (language) {
       hlText = hljs.highlightAuto(text, [language])
     } else {
       hlText = hljs.highlightAuto(text)
+      language = hlText.language
+      if (hlText.relevance < 20) { // not confident enough, render plain
+        hlText.value = text
+      }
     }
-    let formatted = hljs.fixMarkup(hlText.value)
-    language = hlText.language
+
+    if (language === 'md' || language === 'markdown') { // shit, it's md, re-render
+      formatted = md.render(text)
+      commit('setPreviewUsePre', false)
+    } else {
+      formatted = hljs.fixMarkup(hlText.value)
+      commit('setPreviewUsePre', true)
+    }
 
     // hack to change the color of strings
     formatted = formatted.replace(/<span class="hljs-string">/g, '<span class="hljs-string-replacement">')
 
     commit('setFormattedText', formatted)
+    commit('setFormattedLanguage', language)
   }
 }
 
