@@ -32,42 +32,6 @@ function returnOk(res, msg) {
   return
 }
 
-exports.editFirebin = functions
-  .runWith(runtimeOpts)
-  .https.onCall((body, context) => {
-
-    let binId = body.binId
-    let editId = body.editId
-
-
-    return admin.firestore().collection('firebin-edit').doc(editId).get()
-    .then(doc => {
-      if (doc.get('binId') !== binId) {
-        throw new StatusException(403, 'Access Denied')
-      }
-      let edits = doc.get('edits') || 0;
-      edts += 1;
-
-      return admin.firestore().collection('firebin-edit').doc(editId).set({
-        edits: edits
-      }, {merge: true})
-
-    })
-    .then(() => {
-
-      return admin.firestore().collection('firebin').doc(binId).set({
-        data: body.data,
-        encode: body.encode,
-        compress: body.compress,
-        language: body.language
-      }, {merge: true})
-    })
-    .then(() => {
-      return {binId: binId, editId: editId}
-    })
-  });
-
-
 exports.saveFirebin = functions
   .runWith(runtimeOpts)
   .https.onCall((body, context) => {
@@ -81,21 +45,12 @@ exports.saveFirebin = functions
       created: admin.firestore.FieldValue.serverTimestamp(),
       data: body.data,
       encode: body.encode,
-      compress: body.compress,
-      language: body.language
+      compress: body.compress
     })
     .then(doc => {
       binId = doc.id
 
-      return admin.firestore().collection('firebin-edit').add({
-        edits: 0,
-        created: admin.firestore.FieldValue.serverTimestamp(),
-        binId: binId
-      })
-    })
-    .then(doc => {
-      editId = doc.id
-      return {binId: binId, editId: editId}
+      return {binId: binId}
     })
   });
 
@@ -104,11 +59,9 @@ exports.saveFirebinExt = functions
   .https.onRequest((req, res) => {
 
     let ip = req.headers['x-forwarded-for']
-    console.log(req.headers)
     let data = req.body
     let encode = 'text'
     let compress = 'none'
-    console.log(data)
     let input = Buffer.from(data, 'utf-8')
     let b64str
 
@@ -132,20 +85,10 @@ exports.saveFirebinExt = functions
       created: admin.firestore.FieldValue.serverTimestamp(),
       data: data,
       encode: encode,
-      compress: compress,
-      language: null
+      compress: compress
     })
     .then(doc => {
       binId = doc.id
-
-      return admin.firestore().collection('firebin-edit').add({
-        edits: 0,
-        created: admin.firestore.FieldValue.serverTimestamp(),
-        binId: binId
-      })
-    })
-    .then(doc => {
-      editId = doc.id
-      return returnOk(res, {binId: binId, editId: editId})
+      return returnOk(res, {binId: binId})
     })
   });

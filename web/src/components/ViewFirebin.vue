@@ -2,7 +2,7 @@
   <v-layout v-if="loadingText" my-0 py-0>
     <v-progress-linear indeterminate full-width></v-progress-linear>
   </v-layout>
-  <v-layout row wrap v-else-if="viewText===''">
+  <v-layout row wrap v-else-if="formattedText===''">
     <v-flex class="text-xs-center" my-5>
       <h1 class="headline font-weight-light" my-5>Page Not Found</h1>
     </v-flex>
@@ -21,18 +21,14 @@
 <script>
 import { mapState, mapActions, mapMutations } from 'vuex'
 
-import hljs from 'highlight.js'
-
 export default {
   data () {
     return {
-      binId: this.$route.params.binId,
-      formattedText: '',
-      language: ''
+      binId: this.$route.params.binId
     }
   },
   computed: {
-    ...mapState(['viewText', 'loadingText'])
+    ...mapState(['formattedText', 'loadingText'])
   },
   methods: {
     ...mapActions(['loadFirebin']),
@@ -40,35 +36,10 @@ export default {
   },
   mounted () {
     let bits = this.binId.split('.')
-
-    if (bits.length > 1) {
-      this.language = bits[1]
-    }
-
-    this.loadFirebin(bits[0])
+    this.loadFirebin({binId: bits[0], language: bits[1]})
   },
   beforeDestroy () {
     this.setCanCopy(false)
-  },
-  watch: {
-    loadingText (value) {
-      if (value === false && this.formattedText === '') {
-        this.highlighted = true
-
-        let decode
-        if (this.language === '') {
-          decode = hljs.highlightAuto(this.viewText)
-        } else {
-          decode = hljs.highlightAuto(this.viewText, [this.language])
-        }
-        this.formattedText = hljs.fixMarkup(decode.value)
-        this.language = decode.language
-        console.log(decode)
-
-        // hack to change the color of strings
-        this.formattedText = this.formattedText.replace(/<span class="hljs-string">/g, '<span class="hljs-string-replacement">')
-      }
-    }
   }
 }
 </script>
@@ -76,7 +47,7 @@ export default {
 <style>
 @import 'highlight.js/styles/gml.css';
 
-.hljs-string-replacement { /* replacement color to make it darker */
+.hljs-string-replacement { /* replacement color to make it darker  */
   color: #aaaa00;
 }
 </style>

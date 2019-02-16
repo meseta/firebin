@@ -6,6 +6,8 @@ import 'firebase/functions'
 import 'firebase/firestore'
 import pako from 'pako'
 
+import hljs from 'highlight.js'
+
 Vue.use(Vuex)
 
 const state = {
@@ -13,6 +15,7 @@ const state = {
   success: null,
 
   viewText: '',
+  formattedText: '',
   loadingText: false,
   newText: '',
   canEdit: true,
@@ -48,6 +51,7 @@ const mutations = {
   },
 
   setViewText (state, value) { state.viewText = value },
+  setFormattedText (state, value) { state.formattedText = value },
   setLoadingText (state, value) { state.loadingText = value },
 
   setNewText (state, value) { state.newText = value },
@@ -91,6 +95,13 @@ const actions = {
     let input = new TextEncoder('utf-8').encode(data)
     let b64str
 
+    // guess language
+    let hlText = hljs.highlightAuto(data)
+    let language = null
+    if (hlText.relevance > 20) {
+      language = hlText.language
+    }
+
     try {
       let compress = pako.deflate(input)
       let blob = firebase.firestore.Blob.fromUint8Array(compress)
@@ -113,13 +124,19 @@ const actions = {
     saveFirebinFunc({
       data: data,
       encode: encode,
-      compress: compress
+      compress: compress,
+      language: language
     }).then(res => {
       commit('setSuccess', 'Successfully saved firebin')
       commit('setNewText', '')
       commit('setCanEdit', true)
       commit('setBusySave', false)
-      router.push('/' + res.data.binId)
+
+      let path = '/' + res.data.binId
+      if (language) {
+        path = path + '.' + language
+      }
+      router.push(path)
     }).catch(err => {
       console.log(err)
       commit('setError', 'Could not save firebin')
@@ -127,8 +144,11 @@ const actions = {
       commit('setBusySave', false)
     })
   },
-  loadFirebin ({commit, state}, binId) {
+  loadFirebin ({commit, state}, payload) {
     commit('setLoadingText', true)
+
+    let binId = payload.binId
+    let language = payload.language
 
     return firebase.firestore().collection('firebin').doc(binId).get()
       .then(doc => {
@@ -155,6 +175,19 @@ const actions = {
             result = decode
         }
 
+        let hlText
+        if (language) {
+          hlText = hljs.highlightAuto(result, [language])
+        } else {
+          hlText = hljs.highlightAuto(result)
+        }
+        let formattedText = hljs.fixMarkup(hlText.value)
+        language = hlText.language
+
+        // hack to change the color of strings
+        formattedText = formattedText.replace(/<span class="hljs-string">/g, '<span class="hljs-string-replacement">')
+
+        commit('setFormattedText', formattedText)
         commit('setViewText', result)
         commit('setCanCopy', true)
         commit('setLoadingText', false)
