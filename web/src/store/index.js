@@ -40,6 +40,9 @@ const getters = {
   },
   canSave () {
     return state.canSave && !state.busySave && state.newText.length > 0
+  },
+  listHljsLanguages () {
+    return hljs.listLanguages()
   }
 }
 
@@ -82,6 +85,9 @@ const actions = {
       dispatch('renderText', {text: state.newText})
       commit('setInPreview', true)
     }
+  },
+  rerenderPreview ({state, dispatch}, language) {
+    dispatch('renderText', {text: state.newText, language: language})
   },
   newFirebin ({commit, state}) {
     if (router.currentRoute.path === '/') {
