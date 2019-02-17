@@ -37,11 +37,11 @@ exports.saveFirebin = functions
   .https.onCall((body, context) => {
 
     let ip = context.rawRequest.headers['x-forwarded-for']
+    // for flood prevention later
 
     let binId
     let editId
     return admin.firestore().collection('firebin').add({
-      ip: ip,
       created: admin.firestore.FieldValue.serverTimestamp(),
       data: body.data,
       encode: body.encode,
@@ -59,6 +59,8 @@ exports.saveFirebinExt = functions
   .https.onRequest((req, res) => {
 
     let ip = req.headers['x-forwarded-for']
+    // for flood prevention later
+    
     let data = req.body
     let encode = 'text'
     let compress = 'none'
@@ -81,7 +83,6 @@ exports.saveFirebinExt = functions
     }
 
     return admin.firestore().collection('firebin').add({
-      ip: ip,
       created: admin.firestore.FieldValue.serverTimestamp(),
       data: data,
       encode: encode,

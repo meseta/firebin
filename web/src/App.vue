@@ -1,9 +1,22 @@
 <template>
   <v-app :class="darkMode ? 'brown darken-4': 'grey lighten-4'" :dark="darkMode">
     <v-toolbar flat app :class="darkMode ? 'deep-orange darken-4': 'grey lighten-4'">
-      <v-toolbar-title class="text-uppercase primary--text font-weight-light">
+      <v-toolbar-title
+        class="text-uppercase primary--text font-weight-light"
+        style="cursor: pointer"
+        v-on:click="aboutDialog=true">
         FireBin
       </v-toolbar-title>
+
+      <v-tooltip bottom>
+        <template #activator="data">
+          <v-btn fab small flat v-on="data.on" v-on:click="aboutDialog=true" >
+            <v-icon class="secondary--text">info</v-icon>
+          </v-btn>
+        </template>
+        <span>About</span>
+      </v-tooltip>
+
       <v-tooltip bottom>
         <template #activator="data">
           <v-btn fab small flat v-on="data.on" v-on:click="toggleDark()" >
@@ -60,17 +73,39 @@
     <v-content>
       <router-view/>
     </v-content>
+
+    <v-dialog v-model="aboutDialog" max-width="500">
+      <v-card>
+        <v-card-title class="headline">Firebin</v-card-title>
+        <v-card-text>
+          <p>
+            Firebin is an online text snippet storage service hosted on Google Firebase<br />
+            Author: <a href="http://meseta.io">Meseta</a>
+          </p>
+          <p><b>Privacy Policy:</b></p>
+          <p style="white-space: pre-wrap">{{ privacyPolicyText }}</p>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" flat @click="aboutDialog=false">Cool, OK</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
 <script>
 import { mapState, mapActions, mapGetters, mapMutations } from 'vuex'
+import privacyPolicy from './privacyPolicy.txt'
+
 export default {
   name: 'App',
   data () {
     return {
       errorFlag: false,
-      successFlag: false
+      successFlag: false,
+      aboutDialog: false,
+      privacyPolicyText: privacyPolicy
     }
   },
   computed: {
