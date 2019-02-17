@@ -168,4 +168,25 @@ pre code {
 pre code:after {
   content: none;
 }
+
+.render-text {
+  counter-reset: line;
+}
+
+.render-text .render-line {
+  display: inline-block;
+  margin-left: 3em;
+}
+
+.render-text .render-line:before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  padding-right: 1.0em;
+  width: 3em;
+  text-align: right;
+  margin-right: 1.0em;
+  margin-left: -3em;
+  color: #888;
+}
 </style>

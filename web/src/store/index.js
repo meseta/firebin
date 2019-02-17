@@ -5,9 +5,13 @@ import * as firebase from 'firebase/app'
 import 'firebase/functions'
 import 'firebase/firestore'
 import pako from 'pako'
-
 import hljs from 'highlight.js'
 import MarkdownIt from 'markdown-it'
+
+hljs.configure({
+  tabReplace: '    ',
+  useBR: false
+})
 
 const md = new MarkdownIt({
   breaks: false,
@@ -270,6 +274,10 @@ const actions = {
     } else {
       formatted = hljs.fixMarkup(hlText.value)
       commit('setPreviewUsePre', true)
+
+      // add line numbers
+      let lines = formatted.split(/\r\n|\r|\n/g)
+      formatted = '<span class="render-line">' + lines.join('</span>\n<span class="render-line">') + '</span>'
     }
 
     // hack to change the color of strings

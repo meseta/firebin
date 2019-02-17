@@ -8,6 +8,7 @@
       <v-container
         mx-3 my-2 pa-0
         v-html="formattedText"
+        class="render-text"
         :style="'font-family: \'Roboto Mono\', monospace; font-size: 0.9em;' +
                 (previewUsePre ? 'white-space: pre-wrap; word-wrap: break-word;' : '')">
       </v-container>
