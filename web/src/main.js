@@ -18,7 +18,9 @@ firebase.initializeApp(config)
 Vue.use(Vuetify, {
   theme: {
     primary: colors.red,
-    secondary: colors.orange
+    secondary: colors.orange,
+    success: colors.lightGreen,
+    error: colors.deepOrange
   }
 })
 Vue.config.productionTip = false

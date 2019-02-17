@@ -5,6 +5,26 @@ import * as firebase from 'firebase/app'
 import 'firebase/functions'
 import 'firebase/firestore'
 import pako from 'pako'
+import hljs from 'highlight.js'
+import MarkdownIt from 'markdown-it'
+
+hljs.configure({
+  tabReplace: '    ',
+  useBR: false
+})
+
+const md = new MarkdownIt({
+  breaks: false,
+  typographer: true,
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(lang, str).value
+      } catch (__) {}
+    }
+    return ''
+  }
+})
 
 Vue.use(Vuex)
 
@@ -13,14 +33,24 @@ const state = {
   success: null,
 
   viewText: '',
+  formattedText: '',
   loadingText: false,
+  formattedLanguage: '',
+
   newText: '',
   canEdit: true,
   newDialog: false,
+  inPreview: false,
+  previewUsePre: true,
+
   canSave: true,
   busySave: false,
   canCopy: false,
-  busyCopy: false
+  busyCopy: false,
+
+  darkMode: true,
+
+  languageList: hljs.listLanguages().sort()
 }
 
 const getters = {
@@ -31,7 +61,10 @@ const getters = {
     return true
   },
   canSave () {
-    return state.canSave && state.newText.length > 0
+    return state.canSave && !state.busySave && state.newText
+  },
+  listHljsLanguages () {
+    return state.languageList
   }
 }
 
@@ -46,42 +79,74 @@ const mutations = {
   },
 
   setViewText (state, value) { state.viewText = value },
+  setFormattedText (state, value) { state.formattedText = value },
+  setFormattedLanguage (state, value) { state.formattedLanguage = value },
   setLoadingText (state, value) { state.loadingText = value },
 
   setNewText (state, value) { state.newText = value },
   setCanEdit (state, value) { state.canEdit = value },
   setNewDialog (state, value) { state.newDialog = value },
+  setInPreview (state, value) { state.inPreview = value },
+  setPreviewUsePre (state, value) { state.previewUsePre = value },
 
   setCanSave (state, value) { state.canSave = value },
   setBusySave (state, value) { state.busySave = value },
   setCanCopy (state, value) { state.canCopy = value },
-  setBusyCopy (state, value) { state.busyCopy = value }
+  setBusyCopy (state, value) { state.busyCopy = value },
+
+  setDarkMode (state, value) { state.darkMode = value }
 }
 
 const actions = {
-  newFirebin ({commit, state}) {
+  toggleDark ({commit, state}) {
+    localStorage.darkMode = !state.darkMode
+    commit('setDarkMode', !state.darkMode)
+  },
+  toggleInPreview ({commit, state, dispatch}) {
+    if (state.inPreview) {
+      commit('setInPreview', false)
+    } else {
+      dispatch('renderText', {text: state.newText})
+      commit('setInPreview', true)
+    }
+  },
+  rerenderPreview ({state, dispatch}, language) {
+    dispatch('renderText', {text: state.viewText, language: language})
+  },
+  newFirebin ({commit, state, dispatch}) {
     if (router.currentRoute.path === '/') {
       if (state.newText.length > 0) {
         if (state.newDialog === false) {
           commit('setNewDialog', true)
         } else {
           commit('setNewDialog', false)
+          commit('setInPreview', false)
           commit('setNewText', '')
+          dispatch('saveDraft', false) // clear draft
         }
       }
     } else {
       router.push('/')
     }
   },
-  saveFirebin ({commit, state}) {
+  saveFirebin ({commit, state, dispatch}) {
     commit('setBusySave', true)
     commit('setCanEdit', false)
+
+    dispatch('saveDraft', false) // save just in case
 
     let data = state.newText
     let encode = 'text'
     let compress = 'none'
     let input = new TextEncoder('utf-8').encode(data)
     let b64str
+
+    // guess language
+    let hlText = hljs.highlightAuto(data)
+    let language = null
+    if (hlText.relevance > 20) {
+      language = hlText.language
+    }
 
     try {
       let compress = pako.deflate(input)
@@ -105,13 +170,20 @@ const actions = {
     saveFirebinFunc({
       data: data,
       encode: encode,
-      compress: compress
+      compress: compress,
+      language: language
     }).then(res => {
       commit('setSuccess', 'Successfully saved firebin')
       commit('setNewText', '')
+      dispatch('saveDraft', false) // saving here will save empty string thus clearing draft
       commit('setCanEdit', true)
       commit('setBusySave', false)
-      router.push('/v/' + res.data.binId)
+
+      let path = '/' + res.data.binId
+      if (language) {
+        path = path + '.' + language
+      }
+      router.push(path)
     }).catch(err => {
       console.log(err)
       commit('setError', 'Could not save firebin')
@@ -119,8 +191,11 @@ const actions = {
       commit('setBusySave', false)
     })
   },
-  loadFirebin ({commit, state}, binId) {
+  loadFirebin ({commit, state, dispatch}, payload) {
     commit('setLoadingText', true)
+
+    let binId = payload.binId
+    let language = payload.language
 
     return firebase.firestore().collection('firebin').doc(binId).get()
       .then(doc => {
@@ -147,7 +222,7 @@ const actions = {
             result = decode
         }
 
-        commit('setViewText', result)
+        dispatch('renderText', {text: result, language: language})
         commit('setCanCopy', true)
         commit('setLoadingText', false)
       }).catch(err => {
@@ -161,6 +236,55 @@ const actions = {
     commit('setNewText', state.viewText)
     commit('setSuccess', 'You can now edit the copy')
     router.push('/')
+  },
+  saveDraft ({commit, state}, notify) {
+    localStorage.draft = state.newText
+    if (notify) {
+      commit('setSuccess', 'Draft saved')
+    }
+  },
+  loadDraft ({commit}) {
+    if (localStorage.draft) {
+      commit('setNewText', localStorage.draft)
+    }
+  },
+  clearDraft ({commit, state}) {
+    localStorage.draft = ''
+  },
+  renderText ({commit}, payload) {
+    let text = payload.text
+    let language = payload.language
+
+    commit('setViewText', text)
+    let hlText
+    let formatted
+    if (language) {
+      hlText = hljs.highlightAuto(text, [language])
+    } else {
+      hlText = hljs.highlightAuto(text)
+      language = hlText.language
+      if (hlText.relevance < 20) { // not confident enough, render plain
+        hlText.value = text
+      }
+    }
+
+    if (language === 'md' || language === 'markdown') { // shit, it's md, re-render
+      formatted = md.render(text)
+      commit('setPreviewUsePre', false)
+    } else {
+      formatted = hljs.fixMarkup(hlText.value)
+      commit('setPreviewUsePre', true)
+
+      // add line numbers
+      let lines = formatted.split(/\r\n|\r|\n/g)
+      formatted = '<span class="render-line">' + lines.join('</span>\n<span class="render-line">') + '</span>'
+    }
+
+    // hack to change the color of strings
+    formatted = formatted.replace(/<span class="hljs-string">/g, '<span class="hljs-string-replacement">')
+
+    commit('setFormattedText', formatted)
+    commit('setFormattedLanguage', language)
   }
 }
 

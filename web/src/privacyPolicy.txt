@@ -1,0 +1,9 @@
+firebin.gmcloud.org does not use cookies.
+
+firebin.gmcloud.org uses the "local storage" facility in your browser to keep track of two pieces of information:
+- Your light/dark theme setting
+- Your saved draft
+
+firebin.gmcloud.org collects your public IP address along with the data you submit when clicking "save", this is necessary for flood prevention and rate limiting.  No other information is collected.
+
+firebin.gmcloud.org does not provide any mechanisms for privacy, the data you submit by clicking "save" is publically accessible.  Submit data at your own risk, firebin.gmcloud.org is not responsible for any loss of data.
