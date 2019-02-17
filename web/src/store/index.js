@@ -268,9 +268,7 @@ const actions = {
     } else {
       hlText = hljs.highlightAuto(text, defaultLanguages)
       language = hlText.language
-      if (hlText.relevance < 20) { // not confident enough, render plain
-        hlText.value = text
-      }
+      hlText.value = text
     }
 
     if (language === 'md' || language === 'markdown') { // shit, it's md, re-render
