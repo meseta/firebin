@@ -13,6 +13,11 @@ hljs.configure({
   useBR: false
 })
 
+const defaultLanguages = [
+  'bash', 'cs', 'cpp', 'css', 'xml', 'json', 'java', 'javascript', 'markdown',
+  'php', 'perl', 'python', 'ruby', 'sql', 'gml', 'glsl', 'plaintext', 'yaml'
+]
+
 const md = new MarkdownIt({
   breaks: false,
   typographer: true,
@@ -142,7 +147,7 @@ const actions = {
     let b64str
 
     // guess language
-    let hlText = hljs.highlightAuto(data)
+    let hlText = hljs.highlightAuto(data, defaultLanguages)
     let language = null
     if (hlText.relevance > 20) {
       language = hlText.language
@@ -261,7 +266,7 @@ const actions = {
     if (language) {
       hlText = hljs.highlightAuto(text, [language])
     } else {
-      hlText = hljs.highlightAuto(text)
+      hlText = hljs.highlightAuto(text, defaultLanguages)
       language = hlText.language
       if (hlText.relevance < 20) { // not confident enough, render plain
         hlText.value = text
