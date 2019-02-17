@@ -24,9 +24,8 @@
         placeholder="Start typing here"
         ref="textarea"
         v-on:click.stop
-        style="font-family: 'Roboto Mono', monospace; font-size: 0.9em;">
-      >
-
+        style="font-family: 'Roboto Mono', monospace; font-size: 0.9em;"
+        v-on:keydown.tab.prevent="insertTab()">
       </v-textarea>
     </v-layout>
 
@@ -71,10 +70,19 @@ export default {
   },
   methods: {
     ...mapActions(['newFirebin', 'loadDraft', 'rerenderPreview']),
-    focus: function () {
+    focus () {
       let element = this.$refs.textarea
       element.focus()
       element.setCaretPosition(-1)
+    },
+    insertTab () {
+      let element = this.$refs.textarea
+      let textarea = element.$el.querySelector('textarea')
+
+      let start = textarea.selectionStart
+      let end = textarea.selectionEnd
+      this.newText = element.value.substring(0, start) + '    ' + element.value.substring(end)
+      element.setCaretPosition(start + 4)
     }
   },
   mounted () {
