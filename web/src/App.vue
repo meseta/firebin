@@ -47,6 +47,7 @@
         <span v-else>Preview</span>
       </v-tooltip>
 
+	  <v-spacer class="hidden-sm-and-down"></v-spacer>
       <v-toolbar-items>
         <v-btn v-on:click="newFirebin()" :disabled="!canNew" flat class="secondary--text">
           <v-icon left>add_box</v-icon>New
@@ -187,5 +188,12 @@ pre code:after {
   margin-right: 1.0em;
   margin-left: -3em;
   color: #888;
+}
+
+div#app {
+    min-width:100%;
+    width: fit-content;
+    height: fit-content;
+    min-height: 100vh;
 }
 </style>
