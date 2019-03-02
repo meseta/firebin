@@ -47,7 +47,6 @@
         <span v-else>Preview</span>
       </v-tooltip>
 
-      <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn v-on:click="newFirebin()" :disabled="!canNew" flat class="secondary--text">
           <v-icon left>add_box</v-icon>New
