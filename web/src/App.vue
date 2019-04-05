@@ -20,8 +20,8 @@
       <v-tooltip bottom>
         <template #activator="data">
           <v-btn fab small flat v-on="data.on" v-on:click="toggleDark()" >
-            <v-icon v-if="darkMode" class="secondary--text">brightness_3</v-icon>
-            <v-icon v-else class="secondary--text">brightness_5</v-icon>
+            <v-icon v-if="darkMode" class="secondary--text">brightness_5</v-icon>
+            <v-icon v-else class="secondary--text">brightness_3</v-icon>
           </v-btn>
         </template>
         <span>Toggle dark mode</span>

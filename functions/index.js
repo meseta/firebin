@@ -60,7 +60,7 @@ exports.saveFirebinExt = functions
 
     let ip = req.headers['x-forwarded-for']
     // for flood prevention later
-    
+
     let data = req.body
     let encode = 'text'
     let compress = 'none'
